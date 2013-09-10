@@ -26,7 +26,8 @@ func main() {
 	}
 
 	// Add URLs to work channel from CSV
-	addToWork(work)
+	numUrls := addToWork(work)
+	fmt.Printf("Added %d URLs to queue.\n", numUrls)
 
 	// Wait for workers to finish
 	close(work)
@@ -35,16 +36,17 @@ func main() {
 	fmt.Println("Done.")
 }
 
-func addToWork(work chan string) {
+func addToWork(work chan string) int {
 	// Open the file
 	file, err := os.Open("urls.csv")
 	if err != nil {
 		fmt.Println("Error:", err)
-		return
+		return 0
 	}
 	defer file.Close()
 
 	csvReader := csv.NewReader(file)
+	numUrls := 0
 
 	for {
 		line, err := csvReader.Read()
@@ -56,16 +58,17 @@ func addToWork(work chan string) {
 		}
 
 		work <- line[0]
+		numUrls++
 	}
+
+	return numUrls
 }
 
 func worker(work chan string, wg *sync.WaitGroup) {
 	for workUrl := range work {
-		fmt.Println("Getting:", workUrl)
-
 		u, err := url.Parse(workUrl)
 		if err != nil {
-			fmt.Println("Invalid URL, skipping.")
+			fmt.Println("Invalid URL " + workUrl + ", skipping.")
 			continue
 		}
 
@@ -73,7 +76,6 @@ func worker(work chan string, wg *sync.WaitGroup) {
 		name := sanitizeUrl(u.Scheme + u.Host + strings.TrimSuffix(u.Path, ext) + "?" + u.RawQuery)
 		filePath := "./output/" + u.Host + "/"
 		fileName := filePath + name + ext
-		fmt.Println("Saving:", fileName)
 
 		err = os.MkdirAll(filePath, 0755)
 		if err != nil {
@@ -100,6 +102,8 @@ func worker(work chan string, wg *sync.WaitGroup) {
 			fmt.Println("Error writing file, skipping:", err)
 			continue
 		}
+
+		fmt.Println("Saved:", fileName)
 	}
 
 	wg.Done()
