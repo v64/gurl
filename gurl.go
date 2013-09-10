@@ -68,7 +68,7 @@ func worker(work chan string, wg *sync.WaitGroup) {
 		}
 
 		ext := path.Ext(u.Path)
-		name := sanitizeUrl(u.Scheme + u.Host + strings.TrimSuffix(u.Path, ext) + "?" + u.RawQuery)
+		name := sanitizeUrl(u.Scheme + u.Host + trimSuffix(u.Path, ext) + "?" + u.RawQuery)
 		filePath := "./output/" + u.Host + "/"
 		fileName := filePath + name + ext
 
@@ -121,4 +121,11 @@ func stripChars(str string) string {
 	}
 
 	return str
+}
+
+func trimSuffix(s, suffix string) string {
+	if strings.HasSuffix(s, suffix) {
+		return s[:len(s)-len(suffix)]
+	}
+	return s
 }
