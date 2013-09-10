@@ -26,8 +26,7 @@ func main() {
 	}
 
 	// Add URLs to work channel from CSV
-	numUrls := addToWork(work)
-	fmt.Printf("Added %d URLs to queue.\n", numUrls)
+	addToWork(work)
 
 	// Wait for workers to finish
 	close(work)
@@ -36,17 +35,16 @@ func main() {
 	fmt.Println("Done.")
 }
 
-func addToWork(work chan string) int {
+func addToWork(work chan string) {
 	// Open the file
 	file, err := os.Open("urls.csv")
 	if err != nil {
 		fmt.Println("Error:", err)
-		return 0
+		return
 	}
 	defer file.Close()
 
 	csvReader := csv.NewReader(file)
-	numUrls := 0
 
 	for {
 		line, err := csvReader.Read()
@@ -58,10 +56,7 @@ func addToWork(work chan string) int {
 		}
 
 		work <- line[0]
-		numUrls++
 	}
-
-	return numUrls
 }
 
 func worker(work chan string, wg *sync.WaitGroup) {
