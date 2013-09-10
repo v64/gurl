@@ -1,4 +1,5 @@
 Gurl: A quick, multithreaded URL downloader.
+License: Public domain
 
 To run: go run gurl.go
 
