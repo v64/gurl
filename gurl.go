@@ -15,14 +15,12 @@ import (
 )
 
 func main() {
-	runtime.GOMAXPROCS(runtime.NumCPU())
-
 	// Create a wait group to report to and a work channel that takes URLs
 	wg := new(sync.WaitGroup)
 	work := make(chan string)
 
 	// Create workers and start goroutines listening to work channel
-	numWorkers := 100
+	numWorkers := 10
 	wg.Add(numWorkers)
 	for i := 1; i <= numWorkers; i++ {
 		go worker(work, wg)
