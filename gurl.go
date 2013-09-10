@@ -19,7 +19,7 @@ func main() {
 	work := make(chan string)
 
 	// Create workers and start goroutines listening to work channel
-	numWorkers := 10
+	numWorkers := 25
 	wg.Add(numWorkers)
 	for i := 1; i <= numWorkers; i++ {
 		go worker(work, wg)
