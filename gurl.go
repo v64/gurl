@@ -9,11 +9,14 @@ import (
 	"os"
 	"path"
 	"regexp"
+	"runtime"
 	"strings"
 	"sync"
 )
 
 func main() {
+	runtime.GOMAXPROCS(runtime.NumCPU())
+
 	// Create a wait group to report to and a work channel that takes URLs
 	wg := new(sync.WaitGroup)
 	work := make(chan string)
