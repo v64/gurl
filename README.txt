@@ -2,6 +2,7 @@ Gurl: A quick, multithreaded URL downloader.
 License: Public domain
 
 To run: go run gurl.go
+To adjust the number of workers, modify the numWorkers variable in main().
 
 Expects a CSV in the same directory named urls.csv that looks like this:
 "http://www.example.com/img/img1.jpg"
