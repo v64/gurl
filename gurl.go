@@ -97,13 +97,13 @@ func worker(work chan string, wg *sync.WaitGroup) {
 		}
 		defer resp.Body.Close()
 
-		_, err = io.Copy(out, resp.Body)
+		bytes, err := io.Copy(out, resp.Body)
 		if err != nil {
 			fmt.Println("Error writing file, skipping:", err)
 			continue
 		}
 
-		fmt.Println("Saved:", fileName)
+		fmt.Printf("%d bytes: %s\n", bytes, fileName)
 	}
 
 	wg.Done()
