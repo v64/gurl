@@ -61,47 +61,51 @@ func addToWork(work chan string) {
 
 func worker(work chan string, wg *sync.WaitGroup) {
 	for workUrl := range work {
-		u, err := url.Parse(workUrl)
-		if err != nil {
-			fmt.Println("Invalid URL " + workUrl + ", skipping.")
-			continue
-		}
-
-		ext := path.Ext(u.Path)
-		name := sanitizeUrl(u.Scheme + u.Host + trimSuffix(u.Path, ext) + "?" + u.RawQuery)
-		filePath := "./output/" + u.Host + "/"
-		fileName := filePath + name + ext
-
-		err = os.MkdirAll(filePath, 0755)
-		if err != nil {
-			fmt.Println("Error creating directory, skipping:", err)
-			continue
-		}
-
-		out, err := os.Create(fileName)
-		if err != nil {
-			fmt.Println("Error creating file, skipping:", err)
-			continue
-		}
-		defer out.Close()
-
-		resp, err := http.Get(workUrl)
-		if err != nil {
-			fmt.Println("Error getting URL, skipping:", err)
-			continue
-		}
-		defer resp.Body.Close()
-
-		bytes, err := io.Copy(out, resp.Body)
-		if err != nil {
-			fmt.Println("Error writing file, skipping:", err)
-			continue
-		}
-
-		fmt.Printf("%d bytes: %s\n", bytes, fileName)
+		downloadUrl(workUrl)
 	}
 
 	wg.Done()
+}
+
+func downloadUrl(workUrl string) {
+	u, err := url.Parse(workUrl)
+	if err != nil {
+		fmt.Println("Invalid URL " + workUrl + ", skipping.")
+		return
+	}
+
+	ext := path.Ext(u.Path)
+	name := sanitizeUrl(u.Scheme + u.Host + trimSuffix(u.Path, ext) + "?" + u.RawQuery)
+	filePath := "./output/" + u.Host + "/"
+	fileName := filePath + name + ext
+
+	err = os.MkdirAll(filePath, 0755)
+	if err != nil {
+		fmt.Println("Error creating directory, skipping:", err)
+		return
+	}
+
+	out, err := os.Create(fileName)
+	if err != nil {
+		fmt.Println("Error creating file, skipping:", err)
+		return
+	}
+	defer out.Close()
+
+	resp, err := http.Get(workUrl)
+	if err != nil {
+		fmt.Println("Error getting URL, skipping:", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	bytes, err := io.Copy(out, resp.Body)
+	if err != nil {
+		fmt.Println("Error writing file, skipping:", err)
+		return
+	}
+
+	fmt.Printf("%d bytes: %s\n", bytes, fileName)
 }
 
 func sanitizeUrl(url string) string {
