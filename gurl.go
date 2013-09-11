@@ -52,7 +52,7 @@ func addToWork(work chan string) {
 			break
 		} else if err != nil {
 			fmt.Println("Error:", err)
-			break
+			continue
 		}
 
 		work <- line[0]
