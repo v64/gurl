@@ -26,7 +26,7 @@ func main() {
 	}
 
 	// Add URLs to work channel from CSV
-	addToWork(work)
+	addWorkFromCsv(work)
 
 	// Wait for workers to finish
 	close(work)
@@ -86,12 +86,7 @@ func downloadUrl(workUrl string) {
 }
 
 func sanitizeUrl(url string) string {
-	sanitized := stripChars(url)
-
-	whitespace := regexp.MustCompile("\\s+")
-	sanitized = whitespace.ReplaceAllLiteralString(sanitized, "-")
-
-	return sanitized
+	return regexp.MustCompile("\\s+").ReplaceAllLiteralString(stripChars(url), "-")
 }
 
 func stripChars(str string) string {
@@ -118,7 +113,7 @@ func trimSuffix(s, suffix string) string {
 	return s
 }
 
-func addToWork(work chan string) {
+func addWorkFromCsv(work chan string) {
 	// Open the file
 	file, err := os.Open("urls.csv")
 	if err != nil {
