@@ -35,30 +35,6 @@ func main() {
 	fmt.Println("Done.")
 }
 
-func addToWork(work chan string) {
-	// Open the file
-	file, err := os.Open("urls.csv")
-	if err != nil {
-		fmt.Println("Error:", err)
-		return
-	}
-	defer file.Close()
-
-	csvReader := csv.NewReader(file)
-
-	for {
-		line, err := csvReader.Read()
-		if err == io.EOF {
-			break
-		} else if err != nil {
-			fmt.Println("Error:", err)
-			continue
-		}
-
-		work <- line[0]
-	}
-}
-
 func worker(work chan string, wg *sync.WaitGroup) {
 	for workUrl := range work {
 		downloadUrl(workUrl)
@@ -74,18 +50,19 @@ func downloadUrl(workUrl string) {
 		return
 	}
 
+	parentDir := "./output/"
 	ext := path.Ext(u.Path)
 	name := sanitizeUrl(u.Scheme + u.Host + trimSuffix(u.Path, ext) + "?" + u.RawQuery)
-	filePath := "./output/" + u.Host + "/"
+	filePath := u.Host + "/"
 	fileName := filePath + name + ext
 
-	err = os.MkdirAll(filePath, 0755)
+	err = os.MkdirAll(parentDir+filePath, 0755)
 	if err != nil {
 		fmt.Println("Error creating directory, skipping:", err)
 		return
 	}
 
-	out, err := os.Create(fileName)
+	out, err := os.Create(parentDir + fileName)
 	if err != nil {
 		fmt.Println("Error creating file, skipping:", err)
 		return
@@ -118,10 +95,16 @@ func sanitizeUrl(url string) string {
 }
 
 func stripChars(str string) string {
-	toStrip := [...]string{"~", "`", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "_", "=", "+", "[", "{", "]", "}", "\\", "|", ";", ":", "\"", "'", "&#8216;", "&#8217;", "&#8220;", "&#8221;", "&#8211;", "&#8212;", "—", "–", ",", "<", ".", ">", "/", "?"}
+	toStrip := [...]string{
+		"~", "`", "!", "@", "#", "$", "%", "^", "&", "*",
+		"(", ")", "_", "=", "+", "[", "{", "]", "}", "\\",
+		"|", ";", ":", "\"", "'", "&#8216;", "&#8217;",
+		"&#8220;", "&#8221;", "&#8211;", "&#8212;", "—",
+		"–", ",", "<", ".", ">", "/", "?",
+	}
 
-	for i := range toStrip {
-		str = strings.Replace(str, toStrip[i], "", -1)
+	for _, char := range toStrip {
+		str = strings.Replace(str, char, "", -1)
 	}
 
 	return str
@@ -131,5 +114,30 @@ func trimSuffix(s, suffix string) string {
 	if strings.HasSuffix(s, suffix) {
 		return s[:len(s)-len(suffix)]
 	}
+
 	return s
+}
+
+func addToWork(work chan string) {
+	// Open the file
+	file, err := os.Open("urls.csv")
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+	defer file.Close()
+
+	csvReader := csv.NewReader(file)
+
+	for {
+		line, err := csvReader.Read()
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			fmt.Println("Error:", err)
+			continue
+		}
+
+		work <- line[0]
+	}
 }
