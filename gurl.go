@@ -46,7 +46,7 @@ func worker(work chan string, wg *sync.WaitGroup) {
 func downloadUrl(workUrl string) {
 	u, err := url.Parse(workUrl)
 	if err != nil {
-		fmt.Println("Invalid URL " + workUrl + ", skipping.")
+		fmt.Printf("Invalid URL %s, skipping.\n", workUrl)
 		return
 	}
 
@@ -55,14 +55,22 @@ func downloadUrl(workUrl string) {
 	name := sanitizeUrl(u.Scheme + u.Host + trimSuffix(u.Path, ext) + "?" + u.RawQuery)
 	filePath := u.Host + "/"
 	fileName := filePath + name + ext
+	fullPath := parentDir + filePath
+	fullName := parentDir + fileName
 
-	err = os.MkdirAll(parentDir+filePath, 0755)
+	err = os.MkdirAll(fullPath, 0755)
 	if err != nil {
 		fmt.Println("Error creating directory, skipping:", err)
 		return
 	}
 
-	out, err := os.Create(parentDir + fileName)
+	_, err = os.Stat(fullName)
+	if err == nil {
+		fmt.Printf("File %s already exists, skipping\n", fileName)
+		return
+	}
+
+	out, err := os.Create(fullName)
 	if err != nil {
 		fmt.Println("Error creating file, skipping:", err)
 		return
